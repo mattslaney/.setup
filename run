@@ -1,0 +1,459 @@
+#!/usr/bin/env bash
+##-------------------------------------------------------------------------------- 
+## Title: setup/run
+## Author: Matt Slaney
+## Description: A script to setup my linux environment
+##--------------------------------------------------------------------------------
+
+main() {
+# Check the required apps are installed
+    check_prerequisites
+
+# menu
+    case "$1" in
+        init)
+            echo "Initialising setup"
+            init
+            ;;
+        install)
+            shift
+            case "$1" in
+                "")
+                    install
+                ;;
+                --minimal)
+                    install_minimal
+                ;;
+                --branch)
+                    echo "$1 $2"
+                    if [ -z "$2" ]; then
+                        echo "Must supply branch name"
+                        exit 1
+                    fi
+                    install_branch $2
+                ;;
+                *)
+                    echo "Unexpected flag: $1"
+                ;;
+            esac
+            ;;
+        update)
+            echo "Updating"
+            update
+            ;;
+        uninstall)
+            shift
+            case "$1" in
+                "")
+                    uninstall
+                ;;
+                --config)
+                    uninstall_config
+                ;;
+                *)
+                    echo "Unexpected flag: $1"
+                ;;
+            esac
+            ;;
+        test)
+            echo "Testing"
+            test
+            ;;
+        esac
+}
+
+##
+## INIT
+##
+init() {
+    get_setup
+    get_dots
+    if is_nix; then 
+        get_flakes
+    fi
+}
+
+##
+## INSTALL
+##
+install() {
+    if ! is_nix; then
+        make_app_dir
+    fi
+    make_config_dirs
+    setup_bash
+    setup_tmux
+    setup_vim
+    setup_nvim
+}
+
+install_minimal() {
+    if ! is_nix; then
+        make_app_dir
+    fi
+    make_config_dirs
+    setup_bash
+    setup_vim
+}
+
+install_branch() {
+    cd ~/.setup/dots
+    git checkout $1 &> /dev/null
+    dots_branch=$(git branch --show-current)
+    echo "Dots on $dots_branch"
+    if is_nix; then
+        cd ~/.setup/flakes
+        git checkout $1 &> /dev/null
+        flakes_branch=$(git branch --show-current)
+        echo "Flakes on $flakes_branch"
+    fi
+    install
+}
+
+##
+## UPDATE
+##
+update() {
+    get_setup
+    get_dots
+    if is_nix; then 
+        get_flakes
+    fi
+}
+
+##
+## UNINSTALL
+##
+uninstall() {
+    echo "Uninstalling"
+    uninstall_config
+    if ! is_nix; then
+        uninstall_tmux
+        uninstall_nvim
+    else
+        echo "Using nix, change or remove flake"
+    fi
+}
+
+uninstall_config() {
+    echo "Uninstalling config"
+    # remove_link $BASHRC
+    if file_exists "$BASHRC.orig"; then
+	echo "Restoring original .bashrc"
+	rm $BASHRC
+	mv "$BASHRC.orig" $BASHRC
+    else
+        echo "Could not restore original .bashrc"
+    fi
+    remove_link $VIMRC
+    remove_link $TMUX_CONF
+    remove_link $NVIM_CONFIG
+    remove_link $BASHRCX
+}
+
+##
+## TESTING
+##
+test() {
+    # check_linked $BASHRC
+    # check_extra_bash
+    check_linked $BASHRCX
+    check_linked $VIMRC
+    check_linked $TMUX_CONF
+    check_linked $NVIM_CONFIG
+}
+
+###############################################################################
+
+SETUP_DIR=~/.setup
+DOTS_DIR=~/.setup/dots
+FLAKES_DIR=~/.setup/flakes
+
+BASHRC=~/.bashrc
+BASHRCX=~/.config/bash/.bashrcxtra
+VIMRC=~/.vimrc
+TMUX_CONF=~/.tmux.conf
+TMUX_POWERLINE=~/.config/tmux-powerline
+NVIM_CONFIG=~/.config/nvim
+
+get_setup() {
+    if ! dir_exists $SETUP_DIR; then
+        echo "Cloning .setup"
+        git clone git@github.com:mattslaney/.setup.git $SETUP_DIR
+    else
+        echo ".setup already exists - updating"
+        cd $SETUP_DIR
+        git pull
+    fi
+}
+
+get_dots() {
+    if ! dir_exists $DOTS_DIR; then
+        echo "Cloning dots"
+        git clone git@github.com:mattslaney/dots.git $DOTS_DIR
+    else
+        echo "dots already exists - updating"
+        cd $DOTS_DIR
+        git pull
+    fi
+}
+
+get_flakes() {
+    if ! dir_exists $FLAKES_DIR; then
+        echo "Cloning flakes"
+        git clone git@github.com:mattslaney/nix_flakes.git $FLAKES_DIR
+    else
+        echo "flakes already exists - updating"
+        cd $FLAKES_DIR
+        git pull
+    fi
+}
+
+##
+## PREREQUISITES
+## =============
+## Making sure all the required packages are installed
+##
+
+check_prerequisites() {
+    check_commands_installed
+}
+
+check_commands_installed() {
+    # commands_to_check=("git" "curl" "jq" "fuse" "fzf" "python3" "python3-venv")
+    commands_to_check=("git" "curl" "jq" "fuse" "fzf" "python3" "python3-venv")
+    if ! check_commands_exist "${commands_to_check[@]}"; then
+        echo "Missing commands"
+        # exit 1
+    fi
+}
+
+check_commands_exist() {
+    local missing_commands=()
+    for cmd in "$@"; do
+        if ! command -v "$cmd" &> /dev/null; then
+            missing_commands+=("$cmd")
+        fi
+    done
+
+    if [ "${#missing_commands[@]}" -eq 0 ]; then
+        return 0;
+    else
+        echo "The following commands are missing"
+        printf " %s\n" "${missing_commands[@]}"
+        return 1
+    fi
+}
+
+##
+## ENVIRONMENT
+## =============
+## Setting up some the basic environment
+##
+make_app_dir() {
+    if ! dir_exists ~/apps; then
+        mkdir -p ~/apps
+    fi
+}
+
+make_config_dirs() {
+    mkdir -p ~/.config
+    mkdir -p ~/.config/bash
+}
+
+##
+## SHELL
+## =====
+## Setting up the shell environment
+##
+
+setup_bash() {
+    if file_exists $BASHRC; then
+        rm ~/.bashrc.orig
+        cp $BASHRC ~/.bashrc.orig
+    else
+        touch $BASHRC
+    fi
+    ln -sf ~/.setup/dots/bash/.bashrcxtra $BASHRCX
+    append_to_bashrc ". \"$BASHRCX\"" "bashrcxtra"
+}
+
+install_tmux() {
+  tmux_appimage_url=$(curl -s https://api.github.com/repos/nelsonenzo/tmux-appimage/releases/latest | jq -r '.assets[0].browser_download_url')
+  echo "Downloading $tmux_appimage_url"
+  curl -L "$tmux_appimage_url" > ~/apps/tmux
+  chmod +x ~/apps/tmux
+}
+
+uninstall_tmux() {
+    rm -r ~/apps/tmux
+}
+
+install_tpm() {
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+}
+
+add_tmux_symlinks() {
+    ln -sf ~/.dots/tmux/.tmux.conf ~/.tmux.conf
+}
+
+setup_tmux() {
+    if ! command_exists "tmux"; then
+        if is_nix; then
+            echo "Setup system flake first: Missing tmux"
+            exit 1
+        else
+            install_tmux
+            install_tpm
+        fi
+    fi
+    add_tmux_symlinks
+}
+
+check_extra_bash() {
+    if grep -Fq "bashrcxtra"; then
+        echo ".bashrc is updated"
+    else
+        echo "Not updated: .bashrc"
+    fi
+}
+
+append_to_bashrc() {
+    local text=$1
+    local test=$2
+    if ! grep -Fq $test $BASHRC;
+    then
+        echo "$text" >> "$BASHRC"
+        echo "Added $text to path"
+    fi
+}
+
+##
+## EDITORS
+## =======
+## Setting up the editors
+##
+
+setup_vim() {
+    if file_exists $VIMRC; then
+        mv ~/.vimrc ~/.vimrc.orig
+    fi
+    ln -sf ~/.setup/dots/vim/.vimrc ~/.vimrc
+}
+
+install_nvim() {
+  nvim_appimage_url=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest | jq -r '.assets[] | select(.name == "nvim.appimage") | .browser_download_url')
+  echo "Downloading $nvim_appimage_url"
+  curl -L "$nvim_appimage_url" > ~/apps/nvim 
+  chmod +x ~/apps/nvim
+}
+
+uninstall_nvim() {
+    rm -r ~/apps/nvim
+    rm -rf ~/.local/share/nvim
+}
+
+setup_nvim() {
+    if ! command_exists "nvim"; then
+        if is_nix; then
+            echo "Setup system flake first: Missing nvim"
+            exit 1
+        else
+            install_nvim
+        fi
+    fi
+    if file_exists $NVIM_CONFIG; then
+        mv ~/.config/nvim ~/.config/nvim.orig
+    fi
+    ln -sf ~/.setup/dots/nvim ~/.config/nvim
+}
+
+################################################################################
+
+##
+## HELPERS
+## =======
+## Some helper functions
+##
+
+file_exists() {
+    if [ -e $1 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+dir_exists() {
+    if [ -d $1 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+is_link() {
+    if [ -L $1 ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+check_linked() {
+    if is_link $1; then
+        echo "$1 is linked"
+    else
+        echo "NOT linked: $1"
+    fi
+}
+
+remove_link() {
+    if is_link $1; then
+        rm $1
+    fi
+}
+
+command_exists() {
+    if command -v $1 &> /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+is_nix() {
+    if command -v nix &> /dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+###############################################################################
+
+##
+## START
+##
+
+if [ $# -eq 0 ]; then
+echo "
+USAGE:
+$0 init      fetches config from git and sets up a few basics
+
+$0 install   sets up a linux machine with my config
+--minimal           does a minimal setup
+--branch <name>     installs setup from branch 
+
+$0 update    updates my config
+--branch <name>     updates setup from branch
+
+$0 uninstall removes my config
+
+$0 refresh   Clear app caches as if fresh install
+
+$0 purge     Removes everything
+"
+else
+main $@
+fi
