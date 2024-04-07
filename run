@@ -85,6 +85,7 @@ install() {
     setup_tmux
     setup_vim
     setup_nvim
+    setup_hyprland
 }
 
 install_minimal() {
@@ -259,6 +260,11 @@ make_app_dir() {
 make_config_dirs() {
     mkdir -p ~/.config
     mkdir -p ~/.config/bash
+}
+
+setup_hyprland() {
+    mv ~/.config/hypr ~/.config/hypr_orig
+    ln -sf ~/.setup/dots/hypr ~/.config/hypr
 }
 
 ##
