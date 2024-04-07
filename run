@@ -82,6 +82,7 @@ install() {
     fi
     make_config_dirs
     setup_bash
+    setup_alacritty
     setup_tmux
     setup_vim
     setup_nvim
@@ -94,6 +95,7 @@ install_minimal() {
     fi
     make_config_dirs
     setup_bash
+    setup_tmux
     setup_vim
 }
 
@@ -282,6 +284,12 @@ setup_bash() {
     fi
     ln -sf ~/.setup/dots/bash/.bashrcxtra $BASHRCX
     append_to_bashrc ". \"$BASHRCX\"" "bashrcxtra"
+}
+
+setup_alacritty() {
+    if command_exists "alacritty"; then
+        ln -sf ~/.setup/dots/alacritty ~/.config/alacritty
+    fi
 }
 
 install_tmux() {
