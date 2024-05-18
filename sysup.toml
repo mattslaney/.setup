@@ -1,0 +1,18 @@
+[setup]
+path="./setup"
+
+[pkgmgr]
+install="apt install -y $APP"
+upgrade="apt upgrade -y $APP"
+uninstall="apt uninstall -y $APP"
+check="which $APPNAME"
+
+[scripts]
+ext=["sh", "py"]
+
+[interpreters]
+sh="bash $SCRIPT"
+py="python3 $SCRIPT"
+bat="cmd.exe /c $SCRIPT"
+ps1="powershell.exe $SCRIPT"
+

@@ -1,0 +1,9 @@
+name = "remote dev"
+type = "environment"
+
+[members]
+apps = [
+    tmux = { profile = "minimal" }
+    vim = { profile = "minimal" }
+]
+

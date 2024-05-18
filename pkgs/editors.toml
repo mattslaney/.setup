@@ -1,0 +1,15 @@
+
+[members]
+apps = [ "vscode", "neovim" ]
+
+[members.linux]
+apps = [ "lapce" ]
+
+[members.windows]
+apps = [ "visualstudio" ]
+
+[packages.windows]
+winget = [ "Notepad++.Notepad++" ]
+
+[packages.linux]
+

@@ -1,0 +1,15 @@
+name = "c dev tools"
+type = "package"
+
+[members]
+
+
+[pkgmgr]
+apt = [ "build-essential" ]
+zypper = [ "patterns-deve-C-C++" ]
+pacman = [ "base-devel" ]
+winget = [ "Microsoft.VisualStudio.2022.BuildTools" ]
+
+[actions.windows]
+after = [ ".\install-msvc.ps1" ]
+

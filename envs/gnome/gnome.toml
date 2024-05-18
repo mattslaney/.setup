@@ -1,0 +1,3 @@
+[actions]
+install = [ "./scripts/install-paperwm.sh" ]
+after = [ "./scripts/configure-paperwm.sh", "./scripts/load-dconf.sh" ]

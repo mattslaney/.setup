@@ -1,0 +1,13 @@
+[pkgmgr]
+apt = "vim"
+pacman = "vim"
+winget = "Vim.Vim"
+zypper = "vim"
+
+[symlinks]
+"~/.config/.vimrc"={
+  default=".vimrc"
+  minimal="minimal.vimrc"
+}
+
+[actions]

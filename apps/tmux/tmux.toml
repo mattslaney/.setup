@@ -1,0 +1,13 @@
+[actions.linux]
+before= []
+install = []
+after = [
+    "ln -sf ./config/{profile}.tmux.conf ~/.config/.tmux.conf"
+]
+
+[pkgmgr]
+apt = [ "tmux", "xclip" ]
+zypper = [ "tmux", "xclip" ]
+pacman = [ "tmux", "xclip" ]
+winget = []
+

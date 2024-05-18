@@ -1,0 +1,8 @@
+[pkgmgr]
+name="pacman"
+update="pacman -Sy"
+install="pacman -S $APP"
+upgrade="pacman -Syu $APP"
+uninstall="pacman -Rs $APP"
+check="pacman -Qi $APP"
+

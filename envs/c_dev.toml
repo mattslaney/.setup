@@ -1,0 +1,12 @@
+name = "c dev"
+type = "environment"
+
+[members]
+pkgs = [
+    editors = true
+    { apt = "build-essential", zypper = "patterns-devel-C-C++", winget = [""] }
+    
+]
+apps = [
+    cmake
+]

@@ -1,0 +1,10 @@
+[pkgmgr]
+name="winget"
+install="winget install --id $APP -e --silent --source winget"
+upgrade="winget upgrade --id $APP -e --silent --source winget"
+uninstall="winget uninstall --id $APP -e --silent --source winget"
+check="winget list --id $APPNAME"
+
+[scripts]
+ext="ps1"
+

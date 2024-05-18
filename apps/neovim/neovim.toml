@@ -1,0 +1,17 @@
+
+[members]
+
+[packages.windows]
+winget = [ "Neovim.Neovim", "BurntSushi.ripgrep.MSVC" ]
+
+[packages.linux]
+apt = [ "ripgrep" ]
+
+[actions.linux]
+before = [ "./build.sh" ]
+install = [ "./install.sh" ]
+after = [ "./setup.sh" ]
+
+[actions.windows]
+after = [ "./setup.ps1" ]
+

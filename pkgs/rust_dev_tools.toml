@@ -1,0 +1,9 @@
+[members]
+pkgs = [ "c_dev_tools" ]
+
+[pkgmgr]
+winget = [ "Rustlang.Rustup" ]
+
+[actions.linux]
+install = [ "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh" ]
+
