@@ -1,0 +1,48 @@
+# Neovim config switcher
+NVS_DIR='nvims/'
+alias nvchad="NVIM_APPNAME=${NVS_DIR}NvChad nvim"
+
+nvs() {
+  items=("default" "NvChad")
+  config=$(printf "%s\n" "${items[@]}" | fzf --prompt=" Neovim Config  " --height=20% --layout=reverse --border --exit-0)
+  if [[ -z $config ]]; then
+    echo "Nothing selected"
+    return 0
+  elif [[ $config == "default" ]]; then
+    config=""
+  fi
+  NVIM_APPNAME=$NVS_DIR$config nvim $@
+}
+# bind -x '"\C-a": nvs'
+
+# Alias to start tmux
+alias tx1='tmux'
+# Alias to start tmux with two vertical panes
+alias tx2='tmux new-session \; split-window -h \; attach'
+# Alias to start tmux with 1 vertical pane left and 2 horizontal panes right
+alias tx3='tmux new-session \; split-window -h \; split-window -v \; attach'
+# Alias to start tmux with 2 vertical pane left and 2 horizontal panes right
+alias tx4='tmux new-session \; split-window -h \; split-window -v \; select-pane -t 0 \; split-window -v \; attach'
+
+export SETUP_HOME=$HOME/.setup
+export DOTS_HOME=$HOME/.setup/dots
+export FLAKE_HOME=$HOME/.setup/flakes
+export OS_FLAKE_HOME=$HOME/.setup/flakes/os
+export DEV_FLAKE_HOME=$HOME/.setup/flakes/develop
+
+if command -v nixos-rebuild; then
+    build_os_flake() {
+        read -p "Which os flake to build? " os_flake
+        sudo nixos-rebuild switch --flake "$OS_FLAKE_HOME#$os_flake"
+    }
+    #bind -x '"\C-n": build_os_flake'
+fi
+
+if command -v nix; then
+    build_dev_flake() {
+        read -p "Which dev flake to create?" dev_flake
+        nix flake init --template "$DEV_FLAKE_HOME#$dev_flake"
+    }
+    #bind -x '"\e\C-n": build_dev_flake'
+fi
+
