@@ -4,6 +4,9 @@ script_path=$PWD
 setup_path=$HOME/.setup
 cd $setup_path
 
+# Setup gnome
+./environments/gnome/setup.sh
+
 # Setup utilities
 cd $setup_path/utilities
 ./nvm/setup.sh
