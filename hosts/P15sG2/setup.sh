@@ -4,8 +4,15 @@ script_path=$PWD
 setup_path=$HOME/.setup
 cd $setup_path
 
+# Setup utilities
+cd $setup_path/utilities
+./nvm/setup.sh
+./rust/setup.sh
+./sdkman/setup.sh
+./nix/setup.sh
+
 # Setup basic applications
-cd applications
+cd $setup_path/applications
 ./vim/setup.sh
 ./tmux/setup.sh
 ./alacritty/setup.sh
@@ -17,9 +24,3 @@ cd applications
 ./jetbrains-toolbox/setup.sh
 ./nvim/setup.sh
 
-# Setup utilities
-cd $setup_path/utilities
-./nvm/setup.sh
-./rust/setup.sh
-./sdkman/setup.sh
-./nix/setup.sh

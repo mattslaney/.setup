@@ -1,3 +1,5 @@
+if ! command -v waterfox &> /dev/null
+then
 cd ~/Downloads
 wget https://cdn1.waterfox.net/waterfox/releases/latest/linux -O waterfox.tar.bz2
 # wget https://cdn1.waterfox.net/waterfox/releases/G6.0.16/Linux_x86_64/waterfox-G6.0.16.tar.bz2
@@ -29,4 +31,6 @@ Categories=Network;WebBrowser;
 EOF
 
 echo "Waterfox installed successfully."
-
+else
+echo "Waterfox already installed"
+fi

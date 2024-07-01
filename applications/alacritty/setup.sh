@@ -17,9 +17,17 @@ if ! command -v alacritty &> /dev/null; then
     #cargo install alacritty
     
     # Install from source
-    cd /usr/local/src
-    sudo git clone https://github.com/alacritty/alacritty.git
-    cd alacritty
+    mkdir ~/.src
+    cd ~/.src
+    if [ -d alacritty ]; then
+        cd alacritty
+        git pull
+        git clean -fdx
+        git reset --hard main
+    else
+        git clone https://github.com/alacritty/alacritty.git
+        cd alacritty
+    fi
     cargo build --release
     
     # Check terminfo
